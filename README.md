@@ -5,13 +5,14 @@ Store for integration system with Java and Spring Boot.
 
 ### RESTful API details
 
-###How to run the service
+### How to run the service
 
 	Make sure you have Maven installed and added to your operating system's PATH, as well as Git.
 	cd /path/to/your/repo
 	mvn spring-boot:run
 	
-###Importing the project into Eclipse STS, Eclipse or Intellij
+### Importing the project into Eclipse STS, Eclipse or Intellij
+
 mvn eclipse:eclipse
 
 In STS/Eclipse import the project as project Maven.
