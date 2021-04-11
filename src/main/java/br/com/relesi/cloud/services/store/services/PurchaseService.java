@@ -1,5 +1,6 @@
 package br.com.relesi.cloud.services.store.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -10,10 +11,13 @@ import br.com.relesi.cloud.services.store.dto.PurchaseDTO;
 
 @Service
 public class PurchaseService {
+	
+	@Autowired
+	private RestTemplate client;
 
 	public void accomplishPurchase(PurchaseDTO purchase) {
 
-		RestTemplate client = new RestTemplate();
+		
 		ResponseEntity<InfoProviderDTO> exchange =	
 				client.exchange("http://provider/info/" + purchase.getAddress().getState(), 
 				HttpMethod.GET, null,InfoProviderDTO.class);
