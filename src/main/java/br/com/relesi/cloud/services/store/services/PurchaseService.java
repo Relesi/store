@@ -1,39 +1,24 @@
 package br.com.relesi.cloud.services.store.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-
-
+import br.com.relesi.cloud.services.store.client.ProviderClient;
 import br.com.relesi.cloud.services.store.dto.InfoProviderDTO;
 import br.com.relesi.cloud.services.store.dto.PurchaseDTO;
 
 @Service
 public class PurchaseService {
-	
+
 	@Autowired
-	private RestTemplate client;
-	
-	@Autowired
-	private DiscoveryClient eurekaClient;
+	private ProviderClient providerClient;
 
 	public void accomplishPurchase(PurchaseDTO purchase) {
 
+		InfoProviderDTO info = providerClient.getInfoToState(purchase.getAddress().getState());
 		
-		ResponseEntity<InfoProviderDTO> exchange =	
-				client.exchange("http://provider/info/" + purchase.getAddress().getState(), 
-				HttpMethod.GET, null,InfoProviderDTO.class);
 		
-		eurekaClient.getInstances("provider").stream()
-		.forEach(provider -> {
-			System.out.println("localhost:" + provider.getPort());
-		});
-		
-		System.out.println(exchange.getBody().getAddress());
+		System.out.println(info.getAddress());
 	}
 
 }
