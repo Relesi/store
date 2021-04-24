@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.relesi.cloud.services.store.dto.PurchaseDTO;
+import br.com.relesi.cloud.services.store.model.Purchase;
 import br.com.relesi.cloud.services.store.services.PurchaseService;
 
 @RestController
@@ -17,8 +18,8 @@ public class PurchaseController {
 	private PurchaseService purchaseService;
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public void accomplishPurchase(@RequestBody PurchaseDTO purchase) {
-		purchaseService.accomplishPurchase(purchase);
+	public Purchase accomplishPurchase(@RequestBody PurchaseDTO purchase) {
+		return purchaseService.accomplishPurchase(purchase);
 	}
 
 }
