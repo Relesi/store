@@ -13,6 +13,7 @@ import br.com.relesi.cloud.services.store.dto.InfoOrderDto;
 import br.com.relesi.cloud.services.store.dto.InfoProviderDTO;
 import br.com.relesi.cloud.services.store.dto.PurchaseDTO;
 import br.com.relesi.cloud.services.store.model.Purchase;
+import br.com.relesi.cloud.services.store.repository.PurchaseRepository;
 
 @Service
 public class PurchaseService {
@@ -20,9 +21,19 @@ public class PurchaseService {
 	private static final Logger LOG = LoggerFactory.getLogger(PurchaseService.class);
 
 	@Autowired
-	private ProviderClient providerClient;
+	private PurchaseRepository purchseRepository;
 
-	@HystrixCommand(fallbackMethod = "accomplishPurchaseFallback")
+	@Autowired
+	private ProviderClient providerClient;
+	
+	@HystrixCommand(threadPoolKey = "getByIdThreadPool")
+	public Purchase getById(Long id) {
+
+		return purchseRepository.findById(id).orElse(new Purchase());
+	}
+
+	@HystrixCommand(fallbackMethod = "accomplishPurchaseFallback", 
+			threadPoolKey = "accomplishPurchaseThreadPool")
 	public Purchase accomplishPurchase(PurchaseDTO purchase) {
 
 		final String state = purchase.getAddress().getState();
@@ -37,6 +48,7 @@ public class PurchaseService {
 		purchaseSave.setOrderDemand(infoOrder.getId());
 		purchaseSave.setPreparation(infoOrder.getPreparation());
 		purchaseSave.setDestinationAddress(info.getAddress().toString());
+		purchseRepository.save(purchaseSave);
 
 		// System.out.println(info.getAddress());0
 
@@ -50,7 +62,6 @@ public class PurchaseService {
 	}
 
 	public Purchase accomplishPurchaseFallback(PurchaseDTO purchase) {
-
 		Purchase purchaseFallback = new Purchase();
 		purchaseFallback.setDestinationAddress(purchase.getAddress().toString());
 		return purchaseFallback;

@@ -1,7 +1,12 @@
 package br.com.relesi.cloud.services.store.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Purchase {
 
+	@Id
 	private Long orderDemand;
 	private Integer preparation;
 	private String destinationAddress;
