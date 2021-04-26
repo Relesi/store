@@ -8,10 +8,13 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import br.com.relesi.cloud.services.store.client.CarrierClient;
 import br.com.relesi.cloud.services.store.client.ProviderClient;
+import br.com.relesi.cloud.services.store.dto.InfoDeliveryDTO;
 import br.com.relesi.cloud.services.store.dto.InfoOrderDto;
 import br.com.relesi.cloud.services.store.dto.InfoProviderDTO;
 import br.com.relesi.cloud.services.store.dto.PurchaseDTO;
+import br.com.relesi.cloud.services.store.dto.VoucherDTO;
 import br.com.relesi.cloud.services.store.model.Purchase;
 import br.com.relesi.cloud.services.store.repository.PurchaseRepository;
 
@@ -19,6 +22,9 @@ import br.com.relesi.cloud.services.store.repository.PurchaseRepository;
 public class PurchaseService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PurchaseService.class);
+	
+	@Autowired
+	private CarrierClient carrierClient;
 
 	@Autowired
 	private PurchaseRepository purchseRepository;
@@ -43,14 +49,15 @@ public class PurchaseService {
 
 		LOG.info("Placing order");
 		InfoOrderDto infoOrder = providerClient.placeOrder(purchase.getItems());
+		
+		InfoDeliveryDTO deliveryDto = new InfoDeliveryDTO();
+		VoucherDTO voucher = carrierClient.reservationDelivery(deliveryDto);
 
 		Purchase purchaseSave = new Purchase();
 		purchaseSave.setOrderDemand(infoOrder.getId());
 		purchaseSave.setPreparation(infoOrder.getPreparation());
 		purchaseSave.setDestinationAddress(info.getAddress().toString());
 		purchseRepository.save(purchaseSave);
-
-		// System.out.println(info.getAddress());0
 
 		try {
 			Thread.sleep(2000);
