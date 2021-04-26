@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
+import java.time.LocalDate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,22 +50,30 @@ public class PurchaseService {
 		InfoProviderDTO info = providerClient.getInfoToState(purchase.getAddress().getState());
 
 		LOG.info("Placing order");
-		InfoOrderDto infoOrder = providerClient.placeOrder(purchase.getItems());
+		InfoOrderDto order = providerClient.placeOrder(purchase.getItems());
 		
 		InfoDeliveryDTO deliveryDto = new InfoDeliveryDTO();
+		
+		deliveryDto.setOrderId(order.getId());
+		deliveryDto.setDateForDelivery(LocalDate.now().plusDays(order.getPreparation()));
+		deliveryDto.setOriginAddress(info.getAddress());
+		deliveryDto.setDestinationAddress(purchase.getAddress().toString());
 		VoucherDTO voucher = carrierClient.reservationDelivery(deliveryDto);
 
 		Purchase purchaseSave = new Purchase();
-		purchaseSave.setOrderDemand(infoOrder.getId());
-		purchaseSave.setPreparation(infoOrder.getPreparation());
-		purchaseSave.setDestinationAddress(info.getAddress().toString());
+		purchaseSave.setOrderDemand(order.getId());
+		purchaseSave.setPreparation(order.getPreparation());
+		purchaseSave.setDestinationAddress(purchase.getAddress().toString());
+		purchaseSave.setDateForDelivery(voucher.getDeliveryScheduled());
+		purchaseSave.setVoucher(voucher.getNumber());
+		
 		purchseRepository.save(purchaseSave);
 
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(2000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 
 		return purchaseSave;
 	}
