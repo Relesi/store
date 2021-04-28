@@ -59,13 +59,8 @@ public class PurchaseService {
 		purchaseSave.setDestinationAddress(info.getAddress().toString());
 		purchseRepository.save(purchaseSave);
 
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
 		return purchaseSave;
+		
 	}
 
 	public Purchase accomplishPurchaseFallback(PurchaseDTO purchase) {
