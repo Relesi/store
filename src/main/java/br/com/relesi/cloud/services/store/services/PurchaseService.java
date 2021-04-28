@@ -69,11 +69,6 @@ public class PurchaseService {
 		
 		purchseRepository.save(purchaseSave);
 
-//		try {
-//			Thread.sleep(2000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
 
 		return purchaseSave;
 	}
