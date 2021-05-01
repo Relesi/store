@@ -16,11 +16,19 @@ public class Purchase {
 
 	@Id
 	private Long orderDemand;
-	
+
 	private Integer preparation;
 	private String destinationAddress;
 	private LocalDate dateForDelivery;
 	private Long voucher;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public Long getOrderDemand() {
 		return orderDemand;

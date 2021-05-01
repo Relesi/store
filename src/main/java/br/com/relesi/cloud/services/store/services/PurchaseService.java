@@ -69,11 +69,9 @@ public class PurchaseService {
 		purchaseSave.setDateForDelivery(voucher.getDeliveryScheduled());
 		purchaseSave.setVoucher(voucher.getNumber());
 		
-<<<<<<< HEAD
+
 		//purchseRepository.save(purchaseSave);
-=======
-		purchseRepository.save(purchaseSave);
->>>>>>> 99377c9ae18e2dfe18715ecc9092c7a2d42a82aa
+
 
 		return purchaseSave;
 		
