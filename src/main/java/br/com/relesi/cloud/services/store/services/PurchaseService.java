@@ -44,18 +44,13 @@ public class PurchaseService {
 		purchaseSave.setDestinationAddress(purchase.getAddress().toString());
 		purchseRepository.save(purchaseSave);
 		purchase.setPurchaseId(purchaseSave.getId());
-		
-		
+
 		InfoProviderDTO info = providerClient.getInfoToState(purchase.getAddress().getState());
 		InfoOrderDto order = providerClient.placeOrder(purchase.getItems());
 		purchaseSave.setState(PurchaseState.ORDER_PLACED);
 		purchaseSave.setOrderDemand(order.getId());
 		purchaseSave.setPreparation(order.getPreparation());
 		purchseRepository.save(purchaseSave);
-
-		if (1==1)throw new RuntimeException(); 
-		
-		
 
 		InfoDeliveryDTO deliveryDto = new InfoDeliveryDTO();
 		deliveryDto.setOrderId(order.getId());
@@ -70,15 +65,14 @@ public class PurchaseService {
 		purchseRepository.save(purchaseSave);
 
 		return purchaseSave;
-		
+
 	}
 
 	public Purchase accomplishPurchaseFallback(PurchaseDTO purchase) {
 		if (purchase.getPurchaseId() != null) {
 			return purchseRepository.findById(purchase.getPurchaseId()).get();
 		}
-		
-		
+
 		Purchase purchaseFallback = new Purchase();
 		purchaseFallback.setDestinationAddress(purchase.getAddress().toString());
 		return purchaseFallback;
