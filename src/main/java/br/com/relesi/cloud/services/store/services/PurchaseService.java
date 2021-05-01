@@ -45,7 +45,10 @@ public class PurchaseService {
 	public Purchase accomplishPurchase(PurchaseDTO purchase) {
 
 		final String state = purchase.getAddress().getState();
-
+		
+		Purchase purchaseSave = new Purchase();
+		purchseRepository.save(purchaseSave);
+		
 		LOG.info("Seeking provider information by {}", state);
 		InfoProviderDTO info = providerClient.getInfoToState(purchase.getAddress().getState());
 
@@ -53,21 +56,24 @@ public class PurchaseService {
 		InfoOrderDto order = providerClient.placeOrder(purchase.getItems());
 		
 		InfoDeliveryDTO deliveryDto = new InfoDeliveryDTO();
-		
 		deliveryDto.setOrderId(order.getId());
 		deliveryDto.setDateForDelivery(LocalDate.now().plusDays(order.getPreparation()));
 		deliveryDto.setOriginAddress(info.getAddress());
 		deliveryDto.setDestinationAddress(purchase.getAddress().toString());
 		VoucherDTO voucher = carrierClient.reservationDelivery(deliveryDto);
 
-		Purchase purchaseSave = new Purchase();
+		//Purchase purchaseSave = new Purchase();
 		purchaseSave.setOrderDemand(order.getId());
 		purchaseSave.setPreparation(order.getPreparation());
 		purchaseSave.setDestinationAddress(purchase.getAddress().toString());
 		purchaseSave.setDateForDelivery(voucher.getDeliveryScheduled());
 		purchaseSave.setVoucher(voucher.getNumber());
 		
+<<<<<<< HEAD
+		//purchseRepository.save(purchaseSave);
+=======
 		purchseRepository.save(purchaseSave);
+>>>>>>> 99377c9ae18e2dfe18715ecc9092c7a2d42a82aa
 
 		return purchaseSave;
 		
