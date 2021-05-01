@@ -1,14 +1,11 @@
 package br.com.relesi.cloud.services.store.services;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-
-import java.time.LocalDate;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import br.com.relesi.cloud.services.store.client.CarrierClient;
 import br.com.relesi.cloud.services.store.client.ProviderClient;
@@ -18,13 +15,12 @@ import br.com.relesi.cloud.services.store.dto.InfoProviderDTO;
 import br.com.relesi.cloud.services.store.dto.PurchaseDTO;
 import br.com.relesi.cloud.services.store.dto.VoucherDTO;
 import br.com.relesi.cloud.services.store.model.Purchase;
+import br.com.relesi.cloud.services.store.model.PurchaseState;
 import br.com.relesi.cloud.services.store.repository.PurchaseRepository;
 
 @Service
 public class PurchaseService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(PurchaseService.class);
-	
 	@Autowired
 	private CarrierClient carrierClient;
 
@@ -33,28 +29,34 @@ public class PurchaseService {
 
 	@Autowired
 	private ProviderClient providerClient;
-	
+
 	@HystrixCommand(threadPoolKey = "getByIdThreadPool")
 	public Purchase getById(Long id) {
 
 		return purchseRepository.findById(id).orElse(new Purchase());
 	}
 
-	@HystrixCommand(fallbackMethod = "accomplishPurchaseFallback", 
-			threadPoolKey = "accomplishPurchaseThreadPool")
+	@HystrixCommand(fallbackMethod = "accomplishPurchaseFallback", threadPoolKey = "accomplishPurchaseThreadPool")
 	public Purchase accomplishPurchase(PurchaseDTO purchase) {
 
-		final String state = purchase.getAddress().getState();
-		
 		Purchase purchaseSave = new Purchase();
+		purchaseSave.setState(PurchaseState.RECEIVED);
+		purchaseSave.setDestinationAddress(purchase.getAddress().toString());
 		purchseRepository.save(purchaseSave);
+		purchase.setPurchaseId(purchaseSave.getId());
 		
-		LOG.info("Seeking provider information by {}", state);
+		
 		InfoProviderDTO info = providerClient.getInfoToState(purchase.getAddress().getState());
-
-		LOG.info("Placing order");
 		InfoOrderDto order = providerClient.placeOrder(purchase.getItems());
+		purchaseSave.setState(PurchaseState.ORDER_PLACED);
+		purchaseSave.setOrderDemand(order.getId());
+		purchaseSave.setPreparation(order.getPreparation());
+		purchseRepository.save(purchaseSave);
+
+		if (1==1)throw new RuntimeException(); 
 		
+		
+
 		InfoDeliveryDTO deliveryDto = new InfoDeliveryDTO();
 		deliveryDto.setOrderId(order.getId());
 		deliveryDto.setDateForDelivery(LocalDate.now().plusDays(order.getPreparation()));
@@ -62,24 +64,21 @@ public class PurchaseService {
 		deliveryDto.setDestinationAddress(purchase.getAddress().toString());
 		VoucherDTO voucher = carrierClient.reservationDelivery(deliveryDto);
 
-		//Purchase purchaseSave = new Purchase();
-		purchaseSave.setOrderDemand(order.getId());
-		purchaseSave.setPreparation(order.getPreparation());
-		purchaseSave.setDestinationAddress(purchase.getAddress().toString());
+		purchaseSave.setState(PurchaseState.RESERVATION_DELIVERED);
 		purchaseSave.setDateForDelivery(voucher.getDeliveryScheduled());
 		purchaseSave.setVoucher(voucher.getNumber());
-		
-<<<<<<< HEAD
-		//purchseRepository.save(purchaseSave);
-=======
 		purchseRepository.save(purchaseSave);
->>>>>>> 99377c9ae18e2dfe18715ecc9092c7a2d42a82aa
 
 		return purchaseSave;
 		
 	}
 
 	public Purchase accomplishPurchaseFallback(PurchaseDTO purchase) {
+		if (purchase.getPurchaseId() != null) {
+			return purchseRepository.findById(purchase.getPurchaseId()).get();
+		}
+		
+		
 		Purchase purchaseFallback = new Purchase();
 		purchaseFallback.setDestinationAddress(purchase.getAddress().toString());
 		return purchaseFallback;
