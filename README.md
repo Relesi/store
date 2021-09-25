@@ -29,5 +29,4 @@ Store for integration system with Java and Spring Boot.
 * Spring Framework Versão (2.4.2) 
 * jUnit 5 (org.junit.jupiter.api, org.junit.jupiter.engine and org.junit.jupiter.params - 5.4.0)
 * Log4j (1.2.17)
-* Jacoco (0.7.9)
 * Swagger(2.7.0)
